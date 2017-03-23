@@ -221,6 +221,12 @@ Result 메시지:	Rhino.Mocks.Exceptions.ExpectationViolationException : Observe
 ```
 
 그리고 테스트를 돌려 본다.
-이제 테스트가 모두 성공하는 것을 볼 수 있다.
-
+이제 테스트가 성공하는 것을 볼 수 있다.
+```
+테스트 이름:	TestAfterSubjectNotifyAllThenObserverUpdateCalled
+테스트 전체 이름:	ObserverTest2.UnitTest1.TestAfterSubjectNotifyAllThenObserverUpdateCalled
+테스트 소스:	C:\Users\idept\Documents\Visual Studio 2015\Projects\ObserverTest2\ObserverTest2\UnitTest1.cs : 줄 48
+테스트 결과:	성공
+테스트 지속 시간:	0:00:00.188
+```
 
