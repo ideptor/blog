@@ -7,7 +7,6 @@ Subject 인터페이스를 구현하는 WeatherDataSubject를 구현하는 예�
 
  ```c#
 using System;
-using System.Collections.Generic;
 
 namespace ObserverTest2
 {
