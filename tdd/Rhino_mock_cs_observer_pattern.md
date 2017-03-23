@@ -56,7 +56,7 @@ namespace ObserverTest2
             Assert.AreEqual(1, set.Count);
 
         }
-	}
+    }
 }
 ```
 
@@ -137,25 +137,31 @@ Result 메시지:	System.NotImplementedException : 메서드 또는 연산이 �
 
 이제 `notifyObservers()`를 위한 실패하는 테스트 케이스를 만들어 본다.
 이제는 드디어 rhino mock의 기능을 활용하여 실패하는 테스트코드를 작성할 차례이다.	
+여기서 확인하고 싶은 것은 `Subject` 에서 `notifyObservers()`를 클릭하면
+`Subject`에 등록되어 있는 `Observer` 의 `update()` 메소드가 호출되는지 여부이다.
+이를 위해서 `MockRepository`의 `GenerateMock()`을 호출한다.
+**observerMock.Expect(o => o.update(new TemperatureInfo()))** 의미가 바로 `update()`메소드가 불려졌는지를 확인할 수 있도록 행위를 추적하라는 의미이다.
+그리고 `observerMock.VerifyAllExpectations()`를 통해서 우리가 기대한 **expectation**들이 모두 수행되었는지를 확인한다.
 
 ```C#
         [Test]
-        public void TestRemoveObserver()
+        public void TestAfterSubjectNotifyAllThenObserverUpdateCalled()
         {
             // given
-            ISet<Observer> set = new HashSet<Observer>();
-            Subject subject = WeatherDataSubjectFactory.getDefaultSubjectWithHashSet(set);
-            Observer observerStub = MockRepository.GenerateStub<Observer>();
-            subject.registerObserver(observerStub);
-            Assert.True(set.Contains(observerStub));
+            Subject subject = WeatherDataSubjectFactory.getDefaultSubject();
+            Observer observerMock = MockRepository.GenerateMock<Observer>();
+            subject.registerObserver(observerMock);
+
+            observerMock.Expect(o => o.update(new TemperatureInfo())).IgnoreArguments();
 
             // when
-            subject.removeObserver(observerStub);
+            subject.notifyObservers();
 
-            // then
-            Assert.False(set.Contains(observerStub));
-
+            //then
+            observerMock.VerifyAllExpectations();
         }
+
+
 ```		
 
 
@@ -172,7 +178,50 @@ Result 메시지:	System.NotImplementedException : 메서드 또는 연산이 �
 
         internal static Subject getDefaultSubject()
         {
-            throw new NotImplementedException();
+            return new WeatherDataSubject();
         }
     }
 ```
+
+그리고 `WeaderDataSubject`에 인수를 받지 않는 Default 생성자를 추가한다.
+```C#
+public WeatherDataSubject() : this(new HashSet<Observer>()) { }
+```
+
+이제 (실패하도록 설계된) 테스트를 수행해본다.
+역시 테스트가 실패한다.
+
+```
+테스트 이름:	TestAfterSubjectNotifyAllThenObserverUpdateCalled
+테스트 전체 이름:	ObserverTest2.UnitTest1.TestAfterSubjectNotifyAllThenObserverUpdateCalled
+테스트 소스:	C:\Users\idept\Documents\Visual Studio 2015\Projects\ObserverTest2\ObserverTest2\UnitTest1.cs : 줄 48
+테스트 결과:	실패
+테스트 지속 시간:	0:00:00.185
+
+Result StackTrace:	
+위치: Rhino.Mocks.Impl.ReplayMockState.Verify()
+   위치: Rhino.Mocks.MockRepository.Verify(Object obj)
+   위치: Rhino.Mocks.RhinoMocksExtensions.VerifyAllExpectations(Object mockObject)
+   위치: ObserverTest2.UnitTest1.TestAfterSubjectNotifyAllThenObserverUpdateCalled() 파일 C:\Users\idept\Documents\Visual Studio 2015\Projects\ObserverTest2\ObserverTest2\UnitTest1.cs:줄 60
+Result 메시지:	Rhino.Mocks.Exceptions.ExpectationViolationException : Observer.update(any); Expected #1, Actual #0.
+
+
+```
+
+테스트를 성공시키기 위해 `notifyObservers()` 메소드를 아래와 같이 수정한다.
+
+```C#
+        public void notifyObservers()
+        {
+            IEnumerator<Observer> e = set.GetEnumerator();
+            while (e.MoveNext())
+            {
+                e.Current.update(new TemperatureInfo());
+            }
+        }
+```
+
+그리고 테스트를 돌려 본다.
+이제 테스트가 모두 성공하는 것을 볼 수 있다.
+
+
