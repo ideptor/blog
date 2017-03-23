@@ -136,10 +136,13 @@ Result 메시지:	System.NotImplementedException : 메서드 또는 연산이 �
 
 이제 `notifyObservers()`를 위한 실패하는 테스트 케이스를 만들어 본다.
 이제는 드디어 rhino mock의 기능을 활용하여 실패하는 테스트코드를 작성할 차례이다.	
+
 여기서 확인하고 싶은 것은 `Subject` 에서 `notifyObservers()`를 클릭하면
 `Subject`에 등록되어 있는 `Observer` 의 `update()` 메소드가 호출되는지 여부이다.
+
 이를 위해서 `MockRepository`의 `GenerateMock()`을 호출한다.
 **observerMock.Expect(o => o.update(new TemperatureInfo()))** 의미가 바로 `update()`메소드가 불려졌는지를 확인할 수 있도록 행위를 추적하라는 의미이다.
+
 그리고 `observerMock.VerifyAllExpectations()`를 통해서 우리가 기대한 **expectation**들이 모두 수행되었는지를 확인한다.
 
 ```C#
